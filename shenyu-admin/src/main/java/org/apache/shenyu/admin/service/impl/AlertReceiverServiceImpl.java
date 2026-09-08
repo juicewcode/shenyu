@@ -61,10 +61,10 @@ public class AlertReceiverServiceImpl implements AlertReceiverService {
     public void addReceiver(final AlertReceiverDTO alertReceiverDTO) {
         AlertReceiverDO receiverDO = AlertTransfer.INSTANCE.mapToAlertReceiverDO(alertReceiverDTO);
         receiverDO.setId(UUIDUtils.getInstance().generateShortUuid());
-        if (receiverDO.getEnable() == null) {
+        if (Objects.isNull(receiverDO.getEnable())) {
             receiverDO.setEnable(true);
         }
-        if (receiverDO.getMatchAll() == null) {
+        if (Objects.isNull(receiverDO.getMatchAll())) {
             receiverDO.setMatchAll(true);
         }
         Timestamp currentTime = new Timestamp(System.currentTimeMillis());
