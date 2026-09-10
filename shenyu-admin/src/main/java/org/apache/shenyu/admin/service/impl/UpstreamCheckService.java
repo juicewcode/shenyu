@@ -278,7 +278,7 @@ public class UpstreamCheckService {
         if (!REGISTER_TYPE_HTTP.equalsIgnoreCase(registerType)) {
             return;
         }
-        UPSTREAM_MAP.put(selectorId, new CopyOnWriteArrayList<>(commonUpstreams));
+        UPSTREAM_MAP.put(selectorId, toThreadSafeList(commonUpstreams));
     }
 
     private void scheduled() {
@@ -394,7 +394,7 @@ public class UpstreamCheckService {
         }
         removePendingSync(successList);
         if (!successList.isEmpty()) {
-            UPSTREAM_MAP.put(selectorId, new CopyOnWriteArrayList<>(successList));
+            UPSTREAM_MAP.put(selectorId, toThreadSafeList(successList));
             updateSelectorHandler(selectorId, successList);
         } else {
             UPSTREAM_MAP.remove(selectorId);
@@ -405,6 +405,10 @@ public class UpstreamCheckService {
     private void removePendingSync(final List<CommonUpstream> successList) {
         PENDING_SYNC.removeIf(NumberUtils.INTEGER_ZERO::equals);
         successList.forEach(commonUpstream -> PENDING_SYNC.remove(commonUpstream.hashCode()));
+    }
+
+    private List<CommonUpstream> toThreadSafeList(final List<CommonUpstream> upstreams) {
+        return upstreams instanceof CopyOnWriteArrayList ? upstreams : new CopyOnWriteArrayList<>(upstreams);
     }
 
     private void updateSelectorHandler(final String selectorId, final List<CommonUpstream> aliveList) {
