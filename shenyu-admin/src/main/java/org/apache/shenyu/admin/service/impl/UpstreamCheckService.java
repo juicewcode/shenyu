@@ -61,7 +61,6 @@ import org.springframework.stereotype.Component;
 import jakarta.annotation.PreDestroy;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -279,7 +278,7 @@ public class UpstreamCheckService {
         if (!REGISTER_TYPE_HTTP.equalsIgnoreCase(registerType)) {
             return;
         }
-        UPSTREAM_MAP.put(selectorId, commonUpstreams);
+        UPSTREAM_MAP.put(selectorId, new CopyOnWriteArrayList<>(commonUpstreams));
     }
 
     private void scheduled() {
@@ -395,7 +394,7 @@ public class UpstreamCheckService {
         }
         removePendingSync(successList);
         if (!successList.isEmpty()) {
-            UPSTREAM_MAP.put(selectorId, successList);
+            UPSTREAM_MAP.put(selectorId, new CopyOnWriteArrayList<>(successList));
             updateSelectorHandler(selectorId, successList);
         } else {
             UPSTREAM_MAP.remove(selectorId);
@@ -478,7 +477,7 @@ public class UpstreamCheckService {
                 .filter(Objects::nonNull)
                 .forEach(selectorDO -> {
                     String name = pluginMap.get(selectorDO.getPluginId());
-                    List<CommonUpstream> commonUpstreams = new LinkedList<>();
+                    List<CommonUpstream> commonUpstreams = new CopyOnWriteArrayList<>();
                     discoveryUpstreamService.findBySelectorId(selectorDO.getId()).stream()
                             .map(DiscoveryTransfer.INSTANCE::mapToCommonUpstream)
                             .forEach(commonUpstreams::add);
